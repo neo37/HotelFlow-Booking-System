@@ -1,0 +1,214 @@
+{% extends "hotels/base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.title }} - {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .gallery-section {
+        background: #f8f9fa;
+        padding: 40px 0;
+        margin: 40px 0;
+        border-radius: 10px;
+    }
+    .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        background: white;
+    }
+    .gallery-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .gallery-item img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    .gallery-item:hover img {
+        transform: scale(1.1);
+    }
+    .gallery-item .caption {
+        padding: 12px;
+        background: white;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    .video-gallery-item {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .video-gallery-item .video-caption {
+        padding: 12px;
+        background: white;
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'hotels:hotel_list' %}">Гостиницы</a></li>
+        <li class="breadcrumb-item active">{{ hotel.name }}</li>
+    </ol>
+</nav>
+
+<h1 class="mb-4">{{ hotel.name }}</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <p class="mb-2"><i class="bi bi-geo-alt"></i> <strong>Адрес:</strong> {{ hotel.address }}</p>
+        <p class="mb-0">{{ hotel.description }}</p>
+    </div>
+</div>
+
+{% comment %} Основной контент из Wagtail (текст, заголовки и т.д.) {% endcomment %}
+<div class="content mb-4">
+    {% for block in page.body %}
+        {% if block.block_type != 'youtube' %}
+            {% include_block block %}
+        {% endif %}
+    {% endfor %}
+</div>
+
+{% comment %} Галерея фотографий и видео - ниже основного контента {% endcomment %}
+{% if hotel.gallery_images.exists %}
+    <div class="gallery-section">
+        <div class="container">
+            <h2 class="text-center mb-5"><i class="bi bi-images"></i> Галерея</h2>
+            
+            {% comment %} Фотографии гостиницы {% endcomment %}
+            <div class="mb-5">
+                <h3 class="mb-4 text-center"><i class="bi bi-camera"></i> Фотографии</h3>
+                <div class="row g-4" id="hotelGallery">
+                    {% for gallery_image in hotel.gallery_images.all %}
+                        <div class="col-md-4 col-lg-3">
+                            <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#galleryModal" data-image="{{ gallery_image.image.url }}" data-caption="{{ gallery_image.caption }}">
+                                <img src="{{ gallery_image.image.url }}" alt="{{ gallery_image.caption }}">
+                                {% if gallery_image.caption %}
+                                    <div class="caption">{{ gallery_image.caption }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% comment %} Видео YouTube {% endcomment %}
+            {% for block in page.body %}
+                {% if block.block_type == 'youtube' %}
+                    {% if forloop.first %}
+                        <h3 class="mb-4 text-center"><i class="bi bi-play-circle"></i> Видео</h3>
+                    {% endif %}
+                    <div class="mb-4">
+                        <div class="video-gallery-item">
+                            {% include_block block %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    {% comment %} Если только видео без фото {% endcomment %}
+    {% for block in page.body %}
+        {% if block.block_type == 'youtube' %}
+            {% if forloop.first %}
+                <div class="gallery-section">
+                    <div class="container">
+                        <h2 class="text-center mb-5"><i class="bi bi-images"></i> Галерея</h2>
+                        <h3 class="mb-4 text-center"><i class="bi bi-play-circle"></i> Видео</h3>
+            {% endif %}
+            <div class="mb-4">
+                <div class="video-gallery-item">
+                    {% include_block block %}
+                </div>
+            </div>
+            {% if forloop.last %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<!-- Modal для просмотра фотографий -->
+<div class="modal fade" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="galleryModalLabel">Галерея</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid rounded" alt="Gallery image" style="max-height: 70vh;">
+                <p id="modalCaption" class="mt-3 text-muted"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const galleryModal = document.getElementById('galleryModal');
+    
+    if (galleryModal) {
+        const bsModal = new bootstrap.Modal(galleryModal);
+        
+        galleryItems.forEach(item => {
+            item.addEventListener('click', function() {
+                modalImage.src = this.dataset.image;
+                modalCaption.textContent = this.dataset.caption || '';
+                bsModal.show();
+            });
+        });
+    }
+});
+</script>
+
+<div class="mt-5">
+    <h2>Номера в этой гостинице</h2>
+    <div class="row mt-4">
+        {% for room in rooms %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card room-card h-100">
+                    {% if room.photo %}
+                        <img src="{{ room.photo.url }}" class="card-img-top room-image" alt="{{ room.name }}">
+                    {% else %}
+                        <div class="card-img-top room-image bg-secondary d-flex align-items-center justify-content-center">
+                            <i class="bi bi-image text-white" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ room.name }}</h5>
+                        <p class="card-text">{{ room.description|truncatewords:15 }}</p>
+                        <div class="mb-2">
+                            <span class="badge bg-info">
+                                <i class="bi bi-rulers"></i> {{ room.area }} м²
+                            </span>
+                            <span class="badge bg-success ms-2">
+                                <i class="bi bi-currency-exchange"></i> {{ room.price_per_night }} ₽/ночь
+                            </span>
+                        </div>
+                        <a href="{% url 'hotels:room_detail' room.id %}" class="btn btn-primary w-100">
+                            <i class="bi bi-calendar-check"></i> Забронировать
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

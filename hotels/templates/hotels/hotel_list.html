@@ -1,0 +1,81 @@
+{% extends 'hotels/base.html' %}
+
+{% block title %}Список гостиниц{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-building"></i> Список гостиниц</h1>
+
+<div class="filter-section">
+    <h5 class="mb-3"><i class="bi bi-funnel"></i> Фильтр по датам</h5>
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            {{ form.check_in.label_tag }}
+            {{ form.check_in }}
+        </div>
+        <div class="col-md-4">
+            {{ form.check_out.label_tag }}
+            {{ form.check_out }}
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> Найти
+            </button>
+        </div>
+    </form>
+    {% if check_in and check_out %}
+        <div class="mt-3">
+            <small class="text-muted">
+                Показаны гостиницы со свободными номерами с {{ check_in|date:"d.m.Y" }} по {{ check_out|date:"d.m.Y" }}
+            </small>
+        </div>
+    {% endif %}
+</div>
+
+{% if hotels %}
+    <div class="row">
+        {% for hotel in hotels %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card hotel-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-building"></i> {{ hotel.name }}
+                        </h5>
+                        <p class="card-text text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ hotel.address }}
+                        </p>
+                        <p class="card-text">{{ hotel.description|truncatewords:20 }}</p>
+                        <p class="text-muted">
+                            <small>
+                                <i class="bi bi-door-open"></i> Номеров: {{ hotel.rooms.count }}
+                                {% if hotel.gallery_images.exists %}
+                                    | <i class="bi bi-images"></i> Фото: {{ hotel.gallery_images.count }}
+                                {% endif %}
+                            </small>
+                        </p>
+                        <div class="d-grid gap-2">
+                            {% if hotel.pages.exists %}
+                                <a href="{{ hotel.pages.first.url }}" class="btn btn-primary">
+                                    <i class="bi bi-info-circle"></i> Подробнее о гостинице
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'hotels:room_list' hotel.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-door-open"></i> Посмотреть номера
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 
+        {% if check_in and check_out %}
+            К сожалению, нет гостиниц со свободными номерами на указанные даты.
+        {% else %}
+            Гостиницы не найдены.
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+

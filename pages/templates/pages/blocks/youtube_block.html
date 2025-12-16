@@ -1,0 +1,27 @@
+{% load wagtailcore_tags youtube_extract %}
+
+<div class="youtube-block mb-4">
+    <div class="ratio ratio-16x9">
+        {% with video_id=value.url|youtube_id %}
+            {% if video_id %}
+                <iframe 
+                    src="https://www.youtube.com/embed/{{ video_id }}?rel=0&modestbranding=1" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            {% else %}
+                <div class="alert alert-warning">
+                    <strong>Ошибка:</strong> Не удалось извлечь ID видео из URL: {{ value.url|truncatewords:10 }}
+                    <br><small>Убедитесь, что URL имеет формат: https://www.youtube.com/watch?v=VIDEO_ID или https://youtu.be/VIDEO_ID</small>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    {% if value.caption %}
+        <p class="text-muted text-center mt-2"><small>{{ value.caption }}</small></p>
+    {% endif %}
+</div>
+
+

@@ -1,0 +1,103 @@
+{% extends 'hotels/base.html' %}
+
+{% block title %}{{ room.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'hotels:hotel_list' %}">Гостиницы</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'hotels:room_list' room.hotel.id %}">{{ room.hotel.name }}</a></li>
+        <li class="breadcrumb-item active">{{ room.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            {% if room.photo %}
+                <img src="{{ room.photo.url }}" class="card-img-top" alt="{{ room.name }}" style="max-height: 500px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 500px;">
+                    <i class="bi bi-image text-white" style="font-size: 5rem;"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h2 class="card-title">{{ room.name }}</h2>
+                <p class="text-muted">
+                    <i class="bi bi-building"></i> {{ room.hotel.name }} | 
+                    <i class="bi bi-geo-alt"></i> {{ room.hotel.address }}
+                </p>
+                <hr>
+                <h5>Описание</h5>
+                <p class="card-text">{{ room.description }}</p>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <p><i class="bi bi-rulers"></i> <strong>Площадь:</strong> {{ room.area }} м²</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="bi bi-currency-exchange"></i> <strong>Цена за ночь:</strong> {{ room.price_per_night }} ₽</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Заявка на бронирование</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.guest_name.label_tag }}
+                        {{ form.guest_name }}
+                        {% if form.guest_name.errors %}
+                            <div class="text-danger small">{{ form.guest_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.guest_email.label_tag }}
+                        {{ form.guest_email }}
+                        {% if form.guest_email.errors %}
+                            <div class="text-danger small">{{ form.guest_email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.guest_phone.label_tag }}
+                        {{ form.guest_phone }}
+                        {% if form.guest_phone.errors %}
+                            <div class="text-danger small">{{ form.guest_phone.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.check_in.label_tag }}
+                        {{ form.check_in }}
+                        {% if form.check_in.errors %}
+                            <div class="text-danger small">{{ form.check_in.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.check_out.label_tag }}
+                        {{ form.check_out }}
+                        {% if form.check_out.errors %}
+                            <div class="text-danger small">{{ form.check_out.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Отправить заявку
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

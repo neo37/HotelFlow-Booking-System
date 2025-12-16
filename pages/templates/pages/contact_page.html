@@ -1,0 +1,38 @@
+{% extends "hotels/base.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ page.title }}</h1>
+
+<div class="content mb-4">
+    {% for block in page.body %}
+        {% include_block block %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title mb-4">Контактная информация</h3>
+        {% if page.address %}
+            <p class="mb-2">
+                <i class="bi bi-geo-alt"></i> <strong>Адрес:</strong> {{ page.address }}
+            </p>
+        {% endif %}
+        {% if page.phone %}
+            <p class="mb-2">
+                <i class="bi bi-telephone"></i> <strong>Телефон:</strong> {{ page.phone }}
+            </p>
+        {% endif %}
+        {% if page.email %}
+            <p class="mb-2">
+                <i class="bi bi-envelope"></i> <strong>Email:</strong> 
+                <a href="mailto:{{ page.email }}">{{ page.email }}</a>
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
