@@ -3,8 +3,8 @@
 ## Доступ к административной панели
 
 ### Ссылки на админ-панели:
-- **Основная админка Django**: https://familyvacation.me/admin/
-- **Админка Wagtail CMS**: https://familyvacation.me/cms/ (или через /admin/)
+- **Основная админка Django**: https://familyvacation.me/django-admin/
+- **Админка Wagtail CMS**: https://familyvacation.me/admin/ (или через /admin/)
 - **Главная страница сайта**: https://familyvacation.me/
 - **Список гостиниц**: https://familyvacation.me/hotels/
 - **Страница контактов**: https://familyvacation.me/contacts/
